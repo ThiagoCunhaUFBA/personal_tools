@@ -216,6 +216,18 @@ public static ArrayList<Commit> FiltroNomeFile (List<Commit> commits, String Ext
         return listatemporaria;
 }
 
+public static ArrayList<Commit> FiltroNomeFile_SemExtensao (List<Commit> commits, String Extensao) {    
+    ArrayList<Commit> listatemporaria = new ArrayList<Commit>();            
+    
+        for(Commit c:commits){                        
+            if (c.getFile().toUpperCase().contains(Extensao.toUpperCase())){
+                listatemporaria.add(c);                
+            }           
+            
+        }                                
+        return listatemporaria;
+}
+
 
 public static ArrayList<Commit> FiltroOperacao (ArrayList<Commit> commits, String Extensao) {    
     ArrayList<Commit> listatemporaria = new ArrayList<Commit>();        

@@ -576,10 +576,15 @@ public class JCommit extends javax.swing.JFrame {
         }
         //filtro nome arquivo
         if (!(jTextField3.getText()==null || jTextField3.getText().trim().equals(""))){
-            if (!(jTextField2.getText()==null || jTextField2.getText().trim().equals("")))
+            if (!(jTextField2.getText()==null || jTextField2.getText().trim().equals(""))){
+                
                 ListadeCommits = FiltrosCommit.FiltroNomeFile(ListadeCommits, jTextField3.getText()+jTextField2.getText());
-            else
-                ListadeCommits = FiltrosCommit.FiltroNomeFile(ListadeCommits, jTextField3.getText());
+                
+            }                
+            else{
+                ListadeCommits = FiltrosCommit.FiltroNomeFile_SemExtensao(ListadeCommits, jTextField3.getText());                
+            }
+                
             
         }
 
