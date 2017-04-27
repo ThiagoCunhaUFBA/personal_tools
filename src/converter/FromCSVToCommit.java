@@ -22,14 +22,12 @@ import model.*;
 public class FromCSVToCommit {
 
 
-public static ArrayList<Commit> leArquivo(String arquivo, char Separador)  {
+public static ArrayList<Commit> leArquivo(String arquivo, char Separador, boolean shadow)  {
     ArrayList<Commit> listatemp = new ArrayList<Commit>();
     try{
         BufferedReader bufferleitura = new BufferedReader(new FileReader(arquivo));
         
-        String Str;
-        String[] linhatabela;
-        
+        String Str;        
         
         while( (Str = bufferleitura.readLine()) != null ){            
             String revisao = Str.substring(0, Str.indexOf(Separador));            
@@ -59,8 +57,15 @@ public static ArrayList<Commit> leArquivo(String arquivo, char Separador)  {
                 //verificar se já existe na lista para posteriormente inserir
                 //implementar função de comparação
                 //if (Commit.verificarduplicidade(listatemp, new Commit(revisao, path, operacao, c, autor)));
-                if ((new Commit(revisao, path, operacao, c, autor).getFile().length() > 0)&&(!Commit.verificarduplicidade(listatemp, new Commit(revisao, path, operacao, c, autor))))
-                        listatemp.add(new Commit(revisao, path, operacao, c, autor));
+                if (!shadow){
+                        if ((new Commit(revisao, path, operacao, c, autor).getFile().length() > 0)&&(!Commit.verificarduplicidade(listatemp, new Commit(revisao, path, operacao, c, autor))))
+                            listatemp.add(new Commit(revisao, path, operacao, c, autor));                        
+                    
+                }
+                else
+                    listatemp.add(new Commit(revisao, path, operacao, c, autor));                    
+                
+                        
             } catch (OutOfMemoryError e) {
                 System.out.println(e);
                 System.out.println("Quantidade de Registros até estourar a memoria: " + listatemp.size());

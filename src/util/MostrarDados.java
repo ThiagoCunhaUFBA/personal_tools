@@ -34,10 +34,23 @@ public class MostrarDados {
     public static void MostrarTabelaPadrao (JTable Tabela, List<Commit> listatemp, JLabel Label){
     Label.setText("Number of Records 0");
     Tabela.removeAll();
-    DefaultTableModel modelo = new DefaultTableModel();    
+    
+    //tornar a tabela somente leitura
+    DefaultTableModel modelo = new DefaultTableModel(){
+        
+            @Override
+            public boolean isCellEditable(int row, int column) {       
+                return false;
+            }
+        
+    };
+    
+    
+        
+    
     Tabela.setModel(modelo);
     modelo.addColumn("Review");
-    modelo.addColumn("File");
+    modelo.addColumn("Affected File");
     modelo.addColumn("Author");         
     modelo.addColumn("Operation");    
     modelo.addColumn("Date");    
@@ -45,31 +58,30 @@ public class MostrarDados {
     String revisaotemp;
     int contadorrevisao = 1;
     revisaotemp = listatemp.get(0).getRevisao();
-    for ( int i = 0; i < listatemp.size(); i++) 
-    {
-        
-        modelo.addRow(new Object[]{listatemp.get(i).getRevisao(), listatemp.get(i).getFile(), listatemp.get(i).getAutor(), listatemp.get(i).getOperacao(), listatemp.get(i).getData(), listatemp.get(i).getHora()});                         
-        if (!(revisaotemp.equals(listatemp.get(i).getRevisao()))){
-            contadorrevisao++;
-            revisaotemp = listatemp.get(i).getRevisao();
+    for (Commit j:listatemp){
+            modelo.addRow(new Object[]{j.getRevisao(), j.getFile(), j.getAutor(), j.getOperacao(), j.getData(), j.getHora()});
+            if (!(revisaotemp.equals(j.getRevisao()))){
+                    
+                    contadorrevisao++;
+                    revisaotemp = j.getRevisao();
         }
-            
-        
+
     }
     
     
     Tabela.setVisible(true);
-    Label.setText("Number of Records "+String.valueOf(modelo.getRowCount())+" Number of Commits "+contadorrevisao);    
+    Label.setText("Number of Records "+String.valueOf(modelo.getRowCount())+" Number of Commits "+contadorrevisao);
     
 }
     
     
-    public static ArrayList<Commit> CarregarCommits (String caminho){
+    public static ArrayList<Commit> CarregarCommits (String caminho, boolean shadow){
            
     ArrayList<model.Commit> listatemp = new ArrayList<model.Commit>();        
 
     
-    listatemp = FromCSVToCommit.leArquivo(caminho, ',');    
+    listatemp = FromCSVToCommit.leArquivo(caminho, ',', shadow);    
+    // se a tag shadow for verdadeira o leitor não irá verificar duplicidade
     // remocao de commits duplicados
     // nao precisa mais usar a função para remover repetidos listatemp = FiltrosCommit.Artefatosdisrevisao(listatemp);    
     Collections.sort(listatemp);    

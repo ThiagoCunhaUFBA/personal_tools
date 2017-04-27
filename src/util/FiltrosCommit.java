@@ -602,6 +602,46 @@ public static ArrayList<String> EvolucaoClasses(ArrayList<Commit> listadecommits
        return saida;
 }
 
+public static ArrayList<Commit> ReloadShadow (ArrayList<Commit> listadecommits, ArrayList<Commit> listadecommitsShadow){
+    
+    ArrayList<Commit> ListaTemp = new ArrayList<Commit>();
+    
+    for (Commit i:listadecommits)
+        for (Commit j:listadecommitsShadow)
+            if (i.getRevisao().equals(j.getRevisao()))
+                    ListaTemp.add(j);
+    
+    return ListaTemp;
+    
+    
+}
+
+
+public static ArrayList<Commit> ReloadListaCommit (ArrayList<Commit> listadecommits, ArrayList<Commit> listadecommitsShadow){
+    
+    ArrayList<Commit> ListaTemp = new ArrayList<Commit>();
+    
+    for (Commit i:listadecommitsShadow)
+        if ((i.getFile().length() > 0)&&(!Commit.verificarduplicidade(ListaTemp, i))){
+            ListaTemp.add(i);
+            System.out.println(i.getRevisao());
+        }
+            
+        else{
+            
+            System.out.println(i.getRevisao());
+            System.out.println(i.getPath());
+            System.out.println(i.getFile());
+            
+        }             
+        
+
+    
+    return ListaTemp;
+    
+    
+}
+
 
 
 }

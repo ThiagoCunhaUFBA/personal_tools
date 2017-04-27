@@ -34,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.text.html.HTMLEditorKit;
 import util.FiltrosCommit;
 import util.GetPath;
 import util.MostrarDados;
@@ -60,7 +61,8 @@ public class JCommit extends javax.swing.JFrame {
         jFormattedTextField2.setText(grava);
         jFormattedTextField1.setEnabled(false);
         jFormattedTextField2.setEnabled(false);
-        jCheckBox1.setSelected(true);        
+        jCheckBox1.setSelected(true);
+        
         
  
         
@@ -566,12 +568,17 @@ public class JCommit extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         //carregamento inicial
-        if (ListadeCommits == null)
-                ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao);                
+        if (ListadeCommits == null){
+            
+                ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao, false);
+                ListadeCommitsShadow = MostrarDados.CarregarCommits(CaminhoPadrao, true);
+        }
+
         //filtro por extensao de arquivo
         if (!(jTextField2.getText()==null || jTextField2.getText().trim().equals(""))){
+            
             if (!jTextField2.getText().contains("."))
-                jTextField2.setText("."+jTextField2.getText());
+                    jTextField2.setText("."+jTextField2.getText());
             ListadeCommits = FiltrosCommit.FiltroExtensao(ListadeCommits, jTextField2.getText());
         }
         //filtro nome arquivo
@@ -593,7 +600,8 @@ public class JCommit extends javax.swing.JFrame {
             Integer.parseInt(jTextRevision.getText());
         }catch (NumberFormatException e) {
             jTextRevision.setText("-1");
-            JOptionPane.showMessageDialog(null, "Invalid Threshold");
+            JOptionPane.showMessageDialog(null, "Invalid Threshold \n "+e);
+            jTextRevision.requestFocus();            
         }
         
         //verifica se o valor da quantidade maxima de pacotes e valida
@@ -601,7 +609,8 @@ public class JCommit extends javax.swing.JFrame {
             Integer.parseInt(jTexpackagetRevision.getText());
         }catch (NumberFormatException e) {
             jTexpackagetRevision.setText("-1");
-            JOptionPane.showMessageDialog(null, "Invalid Threshold");
+            JOptionPane.showMessageDialog(null, "Invalid Threshold \n "+e);
+            jTexpackagetRevision.requestFocus();
         }
         
 
@@ -619,13 +628,13 @@ public class JCommit extends javax.swing.JFrame {
 
         }
         //filtro por quantidade maxima de atributos modificados
-        if (Integer.parseInt(jTextRevision.getText()) > 1) ListadeCommits = FiltrosCommit.QuantidadedeAtributosMenor(ListadeCommits, Integer.parseInt(jTextRevision.getText()));
-        //filtro para ignorar revisoes que modificam apenas 1 arquivo
+        if (Integer.parseInt(jTextRevision.getText()) > 1) {
+            
+            ListadeCommits = FiltrosCommit.QuantidadedeAtributosMenor(ListadeCommits, Integer.parseInt(jTextRevision.getText()));            
+        }
+        
 
-        if (Integer.parseInt(jTexpackagetRevision.getText()) > 1) ListadeCommits = FiltrosCommit.QuantidadedePacotesMenor(ListadeCommits, Integer.parseInt(jTexpackagetRevision.getText()));
-        //depois pensar sobre limite inferior
-        //ListadeCommits = FiltrosCommit.QuantidadedeAtributosLimiteInferior(ListadeCommits, 1);
-        //filtro para avaliar o tipo de operacao que sofreu cada artefato
+//filtro para avaliar o tipo de operacao que sofreu cada artefato
         switch (jComboBox1.getSelectedIndex()){
             case 1:
             ListadeCommits = FiltrosCommit.FiltroOperacao(ListadeCommits, "ADDED");
@@ -636,7 +645,21 @@ public class JCommit extends javax.swing.JFrame {
             case 3:
             ListadeCommits = FiltrosCommit.FiltroOperacao(ListadeCommits, "DELETED");
             break;
+        }        
+        
+        ListadeCommitsShadow = FiltrosCommit.ReloadShadow(ListadeCommits, ListadeCommitsShadow);
+        
+        
+        
+        //filtro sobre quantidade maxima pacotes afetados modificados
+        if (Integer.parseInt(jTexpackagetRevision.getText()) > 1){
+            
+            ListadeCommitsShadow = FiltrosCommit.QuantidadedePacotesMenor(ListadeCommitsShadow, Integer.parseInt(jTexpackagetRevision.getText()));
+            ListadeCommits = FiltrosCommit.ReloadListaCommit(ListadeCommits, ListadeCommitsShadow);
+            
         }
+        
+        
 
         //verificar se há agrupamento de tempo
         try{
@@ -732,13 +755,13 @@ public class JCommit extends javax.swing.JFrame {
             try {
                 CaminhoPadrao  =  fc.getSelectedFile().getPath();
                 limparfiltros();
-                ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao);
-                ListadeCommitsShadow = MostrarDados.CarregarCommits(CaminhoPadrao);
+                ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao, false);
+                ListadeCommitsShadow = MostrarDados.CarregarCommits(CaminhoPadrao, true);
                 MostrarDados.MostrarTabelaPadrao(jTable1, ListadeCommits, jLabel5);
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "File is not in Valid Format, please check it");
+                JOptionPane.showMessageDialog(null, "File is not in Valid Format, please check it \n "+e);
             }
-            
+                        
             
             
         }
@@ -770,6 +793,7 @@ public class JCommit extends javax.swing.JFrame {
         // TODO add your handling code here:
      @SuppressWarnings("unchecked")
      int tecla = evt.getKeyCode();
+     
      if(tecla == 113){
          //JOptionPane.showInputDialog("Lista 1 \n teste de enter", "Lista 2 \n Lista3 \n Lista4");
          ArrayList<String> lista = new ArrayList<String>();
@@ -777,16 +801,22 @@ public class JCommit extends javax.swing.JFrame {
          if (!jTextField2.getText().equals(""))
                 lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, jTextField2.getText(), obj.toString());
          else
-                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, obj.toString());
-         JFShowCustomized.main("Classes Afetadas pelo commit "+obj.toString(), lista);
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, obj.toString());         
+         
+         JFShowCustomized.main("Artefacts have been modified by commit "+obj.toString(), lista);                  
          //JOptionPane.showMessageDialog(rootPane, "F2");
          }    
      
      if(tecla == 114){         
          ArrayList<String> lista = new ArrayList<String>();
-         Object obj = jTable1.getValueAt(jTable1.getSelectedRow(), 0);         
-         int x = JListCommit.retornarquantidadedasclassesrevisao(ListadeCommitsShadow, jTextField2.getText(), obj.toString());                  
-         JOptionPane.showMessageDialog(rootPane, "Quantidade de Classes Afetada pelo commit "+String.valueOf(x));
+         Object obj = jTable1.getValueAt(jTable1.getSelectedRow(), 0);
+         
+         if (!jTextField2.getText().equals(""))
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, jTextField2.getText(), obj.toString());
+         else
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, obj.toString());         
+                          
+         JOptionPane.showMessageDialog(rootPane, lista.size()+" classes have been modified by commit "+obj.toString());
          }    
      
      if(tecla == 115){
@@ -794,16 +824,36 @@ public class JCommit extends javax.swing.JFrame {
          ArrayList<String> lista = new ArrayList<String>();
          Object obj = jTable1.getValueAt(jTable1.getSelectedRow(), 0);         
          lista = JListCommit.retornarnomepacotesrevisao(ListadeCommitsShadow, obj.toString());
-         JFShowCustomized.main("Pacotes Afetados pelo Commit "+obj.toString(), lista);         
+         JFShowCustomized.main("Packages have been modified by commit "+obj.toString(), lista);                  
          }    
      
      if(tecla == 116){
          //JOptionPane.showInputDialog("Lista 1 \n teste de enter", "Lista 2 \n Lista3 \n Lista4");
          ArrayList<String> lista = new ArrayList<String>();
          Object obj = jTable1.getValueAt(jTable1.getSelectedRow(), 0);         
-         int x = JListCommit.retornarquantidadedaspacotesrevisao(ListadeCommitsShadow, obj.toString());  
-         JOptionPane.showMessageDialog(rootPane, "Quantidade de Pacotes Afetados pelo commit "+String.valueOf(x));
+         int x = JListCommit.retornarquantidadedaspacotesrevisao(ListadeCommitsShadow, obj.toString());           
+         JOptionPane.showMessageDialog(rootPane, String.valueOf(x)+" packages have been modified by commit "+obj.toString());
+         }
+     // apagar este atalho do teclado era apenas para teste
+     if(tecla == 117){
+         //JOptionPane.showInputDialog("Lista 1 \n teste de enter", "Lista 2 \n Lista3 \n Lista4");
+         ArrayList<String> lista = new ArrayList<String>();
+         Object obj = jTable1.getValueAt(jTable1.getSelectedRow(), 0);
+         
+         //lista.add(ListadeCommits.get(Integer.parseInt(obj.toString())).getPackage());
+         //lista.add(ListadeCommits.get(Integer.parseInt(obj.toString())).getPath());
+         JOptionPane.showMessageDialog(rootPane, obj.toString());
+         for (Commit c:ListadeCommitsShadow)
+             if (c.getRevisao().equals(obj.toString())){
+                        JOptionPane.showMessageDialog(rootPane, c.getPath());
+                        JOptionPane.showMessageDialog(rootPane, c.getFile());
+                        JOptionPane.showMessageDialog(rootPane, c.getPackage());
+             }         
+         
+         
+
          }    
+     
           
      
     }//GEN-LAST:event_jTable1KeyPressed
@@ -826,7 +876,8 @@ public class JCommit extends javax.swing.JFrame {
     private void limparfiltros() {                                             
                 //mostrar todos os resultados
         if (ListadeCommits != null){
-            ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao);
+            ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao, false);
+            ListadeCommitsShadow = MostrarDados.CarregarCommits(CaminhoPadrao, true);
             MostrarDados.MostrarTabelaPadrao(jTable1, ListadeCommits, jLabel5);
         }        
         
