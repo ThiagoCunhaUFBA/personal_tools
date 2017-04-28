@@ -194,9 +194,9 @@ public static ArrayList<Commit> FiltroExtensao (List<Commit> commits, String Ext
     ArrayList<Commit> listatemporaria = new ArrayList<Commit>();            
         
         for(Commit c:commits){            
-            if ((c.getFile().toUpperCase().indexOf(Extensao.toUpperCase()) != -1 )&& (c.getFile().lastIndexOf('.')==c.getFile().lastIndexOf(Extensao)))
-                    {
-                listatemporaria.add(c);                
+            if ((c.getExtensao().toUpperCase().equals(Extensao.toUpperCase()))){
+                
+                    listatemporaria.add(c);                
             }
         
         }                                
@@ -204,17 +204,7 @@ public static ArrayList<Commit> FiltroExtensao (List<Commit> commits, String Ext
         return listatemporaria;
 }
 
-public static ArrayList<Commit> FiltroNomeFile (List<Commit> commits, String Extensao) {    
-    ArrayList<Commit> listatemporaria = new ArrayList<Commit>();            
-    
-        for(Commit c:commits){                        
-            if (c.getFile().toUpperCase().equals(Extensao.toUpperCase())){
-                listatemporaria.add(c);                
-            }           
-            
-        }                                
-        return listatemporaria;
-}
+
 
 public static ArrayList<Commit> FiltroNomeFile_SemExtensao (List<Commit> commits, String Extensao) {    
     ArrayList<Commit> listatemporaria = new ArrayList<Commit>();            
@@ -622,20 +612,8 @@ public static ArrayList<Commit> ReloadListaCommit (ArrayList<Commit> listadecomm
     ArrayList<Commit> ListaTemp = new ArrayList<Commit>();
     
     for (Commit i:listadecommitsShadow)
-        if ((i.getFile().length() > 0)&&(!Commit.verificarduplicidade(ListaTemp, i))){
-            ListaTemp.add(i);
-            System.out.println(i.getRevisao());
-        }
-            
-        else{
-            
-            System.out.println(i.getRevisao());
-            System.out.println(i.getPath());
-            System.out.println(i.getFile());
-            
-        }             
-        
-
+        if ((i.getFile().length() > 0)&&(!Commit.verificarduplicidade(ListaTemp, i)))
+                ListaTemp.add(i);                                        
     
     return ListaTemp;
     

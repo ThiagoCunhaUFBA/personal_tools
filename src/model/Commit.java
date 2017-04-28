@@ -101,7 +101,17 @@ public class Commit implements Comparable<Commit>{
                 
             }
 
-
+        public String getExtensao() {                    
+            String temp = "";
+            if (getFile().lastIndexOf('.')!=-1){                    
+                
+                    return getFile().substring(getFile().lastIndexOf('.'), getFile().length());
+                            
+            }else
+                    return null;
+                                       
+    }
+        
         public String getPackage() {                
                 
             String temp = "";                        

@@ -10,12 +10,13 @@ import util.MostrarDados;
 
 
 public class JListCommit {
-    public static ArrayList<String> retornarnomedasclassesrevisao(ArrayList<Commit> ListadeCommitsShadow, String extensao, String revisao){        
+    public static ArrayList<String> retornarnomedasclassesrevisao(ArrayList<Commit> ListadeCommitsShadow, String extensao, String revisao){
         ArrayList<String> saida = new ArrayList<String>();
         
         for(Commit c:ListadeCommitsShadow){
-            if ((c.getFile().contains(extensao))&&(c.getRevisao().equals(revisao))){
+            if ((c.getFile().contains(extensao))&&  (c.getRevisao().equals(revisao))  &&  (!saida.contains(c.getFile()))){
                 saida.add(c.getFile());
+                System.out.println(c.getRevisao()+" "+c.getPath()+"\n");
             }
         }
         return saida;
@@ -24,37 +25,15 @@ public class JListCommit {
     public static ArrayList<String> retornarnomedasclassesrevisao(ArrayList<Commit> ListadeCommitsShadow, String revisao){
         ArrayList<String> saida = new ArrayList<String>();
         
-        for(Commit c:ListadeCommitsShadow){
-            if ((c.getRevisao().equals(revisao))&&(!saida.contains(c.getFile()))){
+        for(Commit c:ListadeCommitsShadow)
+            if ((c.getRevisao().equals(revisao))&&  (!saida.contains(c.getFile())))
+                                
                 saida.add(c.getFile());
-            }
-        }
+            
+        
         return saida;
     }
-    
-    
-    public static int retornarquantidadedasclassesrevisao(ArrayList<Commit> ListadeCommitsShadow, String extensao, String revisao){
-        ArrayList<String> saida = new ArrayList<String>();
         
-        for(Commit c:ListadeCommitsShadow){
-            if ((c.getFile().contains(extensao))&&(c.getRevisao().equals(revisao))){
-                saida.add(c.getFile().substring(0, c.getFile().indexOf(extensao)));
-            }
-        }
-        return saida.size();
-    }
-    
-    public static int retornarquantidadedasclassesrevisao(ArrayList<Commit> ListadeCommitsShadow, String revisao){
-        ArrayList<String> saida = new ArrayList<String>();
-
-        
-        for(Commit c:ListadeCommitsShadow){
-            if ((c.getRevisao().equals(revisao))&&(!saida.contains(c.getFile()))){
-                saida.add(c.getFile());
-            }
-        }
-        return saida.size();
-    }
     
     
     public static int retornarquantidadedaspacotesrevisao(ArrayList<Commit> ListadeCommitsShadow, String revisao){
