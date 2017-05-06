@@ -108,7 +108,7 @@ public class Commit implements Comparable<Commit>{
                     return getFile().substring(getFile().lastIndexOf('.'), getFile().length());
                             
             }else
-                    return null;
+                    return "";
                                        
     }
         

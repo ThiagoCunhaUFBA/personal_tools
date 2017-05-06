@@ -6,10 +6,12 @@
 package util;
 
 import converter.ToCSV;
+import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import model.*;
 import view.JCommit;
@@ -193,8 +195,11 @@ public static List<Commit> QuantidadedeAtributosLimiteInferior (ArrayList<Commit
 public static ArrayList<Commit> FiltroExtensao (List<Commit> commits, String Extensao) {    
     ArrayList<Commit> listatemporaria = new ArrayList<Commit>();            
         
-        for(Commit c:commits){            
-            if ((c.getExtensao().toUpperCase().equals(Extensao.toUpperCase()))){
+        Extensao = Extensao.toUpperCase();
+    
+        for(Commit c:commits){
+                        
+            if ((c.getExtensao().toUpperCase().equals(Extensao))){
                 
                     listatemporaria.add(c);                
             }
@@ -351,38 +356,60 @@ public static List<String> ExtractCommits (List<Commit> commits, String nomefile
 }
 
 
-public static List<String> similaridadeclasses(List<Commit> commits, String classe, ArrayList<Commit> sombra) {
+public static ArrayList<ArtefatoFrequencia> similaridadeclasses(List<Commit> commits) {
 
-    List<String> saida = new ArrayList<String>();    
-    List<String> classes = new ArrayList<String>();    
-    //inicializa a variavel       
-    for (Commit f:commits)
-    {
-        classes = JListCommit.retornarnomedasclassesrevisao(sombra, classe, f.getRevisao());                
-        for(String l:classes)
-                saida.add(l);
-
-    }
-    List<ArtefatoFrequencia> listasaida = new ArrayList<ArtefatoFrequencia>();
+    ArrayList<String> artefatos = new ArrayList<String>();
     
-    for (String s:saida){
-        for (int i=0; i < listasaida.size(); i++){
-            if (s.equals(listasaida.get(i).getAtributo())){
-                listasaida.get(i).setQuantidade(listasaida.get(i).getQuantidade() + 1);
-                i = listasaida.size();
-            }
-                
-        }
-        listasaida.add(new ArtefatoFrequencia(s, 1));        
+    for (Commit c:commits){
         
+        if (!artefatos.contains(c.getFile())&&(c.getFile().length() > 1))
+            
+            artefatos.add(c.getFile());
+            // lista distinta dos artefatos
+                    
+    }
+    //ordenar os artefatos
+    Collections.sort(artefatos);
+    
+    ArrayList<String> artefatossimilares = new ArrayList<String>();
+    ArrayList<ArtefatoFrequencia> saida = new ArrayList<ArtefatoFrequencia>();
+    ArrayList<ArtefatoFrequencia> listadesaida = new ArrayList<ArtefatoFrequencia>();
+    for (String arte:artefatos){
+            
+            artefatossimilares.clear();
+            
+            for (Commit c:commits){
+                
+                if (c.getFile().equals(arte))
+                    for (Commit rartefato:commits){
+                        
+                        if (rartefato.getRevisao().equals(c.getRevisao())&&(!rartefato.getFile().equals(arte)))
+                            
+                                if (!artefatossimilares.contains(rartefato.getFile())){
+                                    
+                                    artefatossimilares.add(rartefato.getFile());
+                                    saida.add(new ArtefatoFrequencia(rartefato.getFile(), 1));
+                                }else
+                                    for (int indice = 0; indice < saida.size(); indice++){
+                                        
+                                        if (saida.get(indice).getAtributo().equals(rartefato.getFile()))
+                                            saida.get(indice).somarQuantidade();
+                                    }
+                        Collections.sort(saida, new ComparatorArtefatoFrequencia());
+                    }
+            }
+            listadesaida.add(new ArtefatoFrequencia(arte, -1));
+            
+            for (ArtefatoFrequencia simi:saida){                
+                    
+                    listadesaida.add(new ArtefatoFrequencia(simi.getAtributo(), simi.getQuantidade()));
+            }
+            saida.clear();
+            
     }
     
-    saida.clear();
-    for (ArtefatoFrequencia a:listasaida){
-        saida.add(a.getAtributo()+"\t"+a.getQuantidade());
-    }
     
-    return saida;
+    return listadesaida;
     
 }
 
@@ -427,8 +454,7 @@ public static List<String> ToBasketSerieCExtensao (List<Commit> commits) {
                         }else
                         saida.add(f.getFile());
                 }
-                else{
-                    //System.out.println("Nao ta entrando aqui");
+                else{                    
 
                     
                         if (f.getFile().indexOf(".")!=-1){                            
@@ -449,44 +475,41 @@ public static List<String> ToBasketSerieCExtensao (List<Commit> commits) {
 
 
 public static ArrayList<Commit> AgruparPorTempoCommits (ArrayList<Commit> commits, int segundos) {    
-    ArrayList<Commit> listadeparacomparar = new ArrayList<Commit>();
-    ArrayList<Commit> commitsdesaida = new ArrayList<Commit>();
-    listadeparacomparar = commits;
     
-    int contador = 1;
-    Calendar datatempo = Calendar.getInstance();
-    datatempo.setTime(listadeparacomparar.get(0).getDataehora().getTime());    
-    datatempo.add(Calendar.SECOND, segundos);
-    String author = listadeparacomparar.get(0).getAutor();   
-    
-
-    String temp = "";
-    for (int i = 0; i < listadeparacomparar.size(); i++){
-        //System.out.println(listadeparacomparar.get(i).getOperacao().substring(0, 1));
-       /* switch (listadeparacomparar.get(i).getOperacao()){            
-            case "ADDED":   temp = "A";
-            break;
-            case "DELETED":   temp = "D";
-            break;
-            case "MODIFIED":   temp = "M";
-            break;                  
-        }*/
-    
+    Commit Commitcomittemp = commits.get(0);
         
-            if ((listadeparacomparar.get(i).getDataehora().before(datatempo))&&(author.equals(listadeparacomparar.get(i).getAutor()))){
-                commitsdesaida.add(new Commit(String.valueOf(contador), listadeparacomparar.get(i).getPath(), listadeparacomparar.get(i).getOperacao().substring(0, 1), listadeparacomparar.get(i).getDataehora(), listadeparacomparar.get(i).getAutor()));
-            }else{                
+    ArrayList<Commit> commitsdesaida = new ArrayList<Commit>();
+    ArrayList<String> ListaControle = new ArrayList<String>();
+        
+    Calendar datatempo = Calendar.getInstance();
+    datatempo.setTime(Commitcomittemp.getDataehora().getTime());    
+    datatempo.add(Calendar.SECOND, segundos);                   
+        
+    for (Commit c:commits){        
+    
+            if ((c.getDataehora().before(datatempo))&&(Commitcomittemp.getAutor().equals(c.getAutor()))){
                 
-                
-                contador = contador+1;
-                commitsdesaida.add(new Commit(String.valueOf(contador), listadeparacomparar.get(i).getPath(), listadeparacomparar.get(i).getOperacao().substring(0, 1), listadeparacomparar.get(i).getDataehora(), listadeparacomparar.get(i).getAutor()));
-                datatempo.setTime(listadeparacomparar.get(i).getDataehora().getTime());
-                datatempo.add(Calendar.SECOND, segundos);
-                author = listadeparacomparar.get(i).getAutor();
+                    if (!ListaControle.contains(c.getFile())){
+                        
+                            commitsdesaida.add(new Commit(Commitcomittemp.getRevisao(), c.getPath(), c.getOperacao().substring(0, 1), c.getDataehora(), c.getAutor()));
+                            ListaControle.add(c.getFile());
+                    }
+                    
+                    
+            }else{                               
+                                
+                    commitsdesaida.add(new Commit(c.getRevisao(), c.getPath(), c.getOperacao().substring(0, 1), c.getDataehora(), c.getAutor()));
+                    Commitcomittemp = c;
+                    datatempo.setTime(c.getDataehora().getTime());
+                    datatempo.add(Calendar.SECOND, segundos);                    
+                    ListaControle.clear();
+                    
             }
         //}
 }        
+
     //remover artefatos repetidos na mesma revisao
+    
     for (int i = 0; i < commitsdesaida.size(); i++){     
         for (int j = 0; j < commitsdesaida.size(); j++)
             if ( commitsdesaida.get(i).getRevisao().equals(commitsdesaida.get(j).getRevisao()) && (commitsdesaida.get(i).getFile().equals(commitsdesaida.get(j).getFile())) && (commitsdesaida.get(i).hashCode()!=commitsdesaida.get(j).hashCode()) ){
@@ -569,10 +592,37 @@ public static void ToBasketSerieTrans (List<Commit> commits, String caminho) {
 }
 
 
-public static ArrayList<String> EvolucaoClasses(ArrayList<Commit> listadecommits){
-        ArrayList<ArtefatoFrequencia> listarevisoes = new ArrayList<ArtefatoFrequencia>();
-        ArrayList<String> saida = new ArrayList<String>();
-        Boolean achou;        
+public static ArrayList<ArtefatoFrequencia> EvolucaoClasses(ArrayList<Commit> listadecommits){
+        
+    ArrayList<ArtefatoFrequencia> listarevisoes = new ArrayList<ArtefatoFrequencia>();
+    
+    ArrayList<String> saida = new ArrayList<String>();
+    
+    for (Commit c:listadecommits){
+        
+        if (!saida.contains(c.getFile()))
+            
+            saida.add(c.getFile());
+            // lista distinta dos artefatos
+                    
+    }
+    
+    for (String s:saida){
+        
+        listarevisoes.add(new ArtefatoFrequencia(s, 0));
+    }
+    
+    
+    for (Commit c:listadecommits){
+        
+        for (int indice = 0; indice < listarevisoes.size(); indice++ )
+            
+            if (listarevisoes.get(indice).getAtributo().equals(c.getFile()))
+                
+                listarevisoes.get(indice).somarQuantidade();
+    }
+    
+/*        Boolean achou;        
         for (Commit c:listadecommits){
             achou = false;
             for (int i = 0; i < listarevisoes.size(); i++){                
@@ -584,22 +634,28 @@ public static ArrayList<String> EvolucaoClasses(ArrayList<Commit> listadecommits
             
             }  
             if (!achou) listarevisoes.add(new ArtefatoFrequencia(c.getFile(), 1));
-       }
-       //Collections.sort(listarevisoes);
-       for (ArtefatoFrequencia a:listarevisoes)
-            saida.add(a.getAtributo()+"\t"+a.getQuantidade());
+       }*/
 
-       return saida;
+               
+       Collections.sort(listarevisoes, new ComparatorArtefatoFrequencia());
+       
+       
+       return listarevisoes;
 }
 
 public static ArrayList<Commit> ReloadShadow (ArrayList<Commit> listadecommits, ArrayList<Commit> listadecommitsShadow){
     
     ArrayList<Commit> ListaTemp = new ArrayList<Commit>();
+    ArrayList<String> listacontrole = new ArrayList<String>();
     
     for (Commit i:listadecommits)
-        for (Commit j:listadecommitsShadow)
-            if (i.getRevisao().equals(j.getRevisao()))
-                    ListaTemp.add(j);
+        if (!listacontrole.contains(i.getRevisao())){
+            listacontrole.add(i.getRevisao());
+            for (Commit j:listadecommitsShadow)
+                if (i.getRevisao().equals(j.getRevisao()))
+                        ListaTemp.add(j);
+            
+        }
     
     return ListaTemp;
     
@@ -611,9 +667,20 @@ public static ArrayList<Commit> ReloadListaCommit (ArrayList<Commit> listadecomm
     
     ArrayList<Commit> ListaTemp = new ArrayList<Commit>();
     
-    for (Commit i:listadecommitsShadow)
-        if ((i.getFile().length() > 0)&&(!Commit.verificarduplicidade(ListaTemp, i)))
-                ListaTemp.add(i);                                        
+    ArrayList<String> listadeindices = new ArrayList<String>();
+    
+    for (Commit s:listadecommitsShadow)
+        
+        if (!listadeindices.contains(s.getRevisao())&&(!s.getRevisao().equals("")))
+            
+                listadeindices.add(s.getRevisao());
+    
+    for (Commit c:listadecommits)
+        
+        if (listadeindices.contains(c.getRevisao()))
+            
+            ListaTemp.add(c);
+    
     
     return ListaTemp;
     

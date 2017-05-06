@@ -20,8 +20,7 @@ public class JFShowCustomized extends javax.swing.JFrame {
      * Creates new form JFShowCustomized
      */
     public JFShowCustomized(String titulo, ArrayList<String> listagem) {
-        initComponents();
-        //JFShowCustomized.set        
+        initComponents();        
         for (String s:listagem){
             jTextPane1.setText(s + "\n"+ jTextPane1.getText());          
             

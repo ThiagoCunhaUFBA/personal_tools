@@ -569,6 +569,7 @@ public class JCommit extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         //carregamento inicial
+        
         if (ListadeCommits == null){
             
                 ListadeCommits = MostrarDados.CarregarCommits(CaminhoPadrao, false);
@@ -633,10 +634,6 @@ public class JCommit extends javax.swing.JFrame {
 
         }
         
-        //verificar se há agrupamento de tempo
-        if (Integer.parseInt(jTextRevision1.getText()) > 0){
-            ListadeCommits = FiltrosCommit.AgruparPorTempoCommits(ListadeCommits, Integer.parseInt(jTextRevision1.getText()));
-        }
         
                         
         //filtro por data
@@ -674,9 +671,25 @@ public class JCommit extends javax.swing.JFrame {
             ListadeCommits = FiltrosCommit.FiltroOperacao(ListadeCommits, "DELETED");
             break;
         }        
-        
+
         ListadeCommitsShadow = FiltrosCommit.ReloadShadow(ListadeCommits, ListadeCommitsShadow);
         
+        
+        //verificar se há agrupamento de tempo
+        if (Integer.parseInt(jTextRevision1.getText()) > 0){
+            ListadeCommits = FiltrosCommit.AgruparPorTempoCommits(ListadeCommits, Integer.parseInt(jTextRevision1.getText()));
+        }
+        
+        
+        System.out.println("Lista de commits");
+        for (Commit c:ListadeCommits){
+            System.out.println(c.getRevisao()+" "+c.getPath());
+        }
+        System.out.println("-----------------------------");
+        System.out.println("Lista de commits shadow");
+        for (Commit c:ListadeCommitsShadow){
+            System.out.println(c.getRevisao()+" "+c.getPath());
+        }        
         MostrarDados.MostrarTabelaPadrao(jTable1, ListadeCommits, jLabel5);
 
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -804,14 +817,14 @@ public class JCommit extends javax.swing.JFrame {
          Object obj = jTable1.getValueAt(jTable1.getSelectedRow(), 0);
          if (!jTextField2.getText().equals("")){
              
-                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, jTextField2.getText(), obj.toString());
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommits, jTextField2.getText(), obj.toString());
                 JFShowCustomized.main("Artefacts with '"+jTextField2.getText()+"' extension have been modified by commit "+obj.toString(), lista);
              
          }
                 
          else{
              
-                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, obj.toString());
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommits, obj.toString());
                 JFShowCustomized.main("Artefacts have been modified by commit "+obj.toString(), lista);                  
          }
                 
@@ -826,11 +839,11 @@ public class JCommit extends javax.swing.JFrame {
          
          if (!jTextField2.getText().equals("")){
                 
-                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, jTextField2.getText(), obj.toString());
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommits, jTextField2.getText(), obj.toString());
                 JOptionPane.showMessageDialog(rootPane, lista.size()+" artefacts with '"+jTextField2.getText()+"' extension have been modified by commit "+obj.toString());
          }else{
              
-                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommitsShadow, obj.toString());         
+                lista = JListCommit.retornarnomedasclassesrevisao(ListadeCommits, obj.toString());         
                 JOptionPane.showMessageDialog(rootPane, lista.size()+" artefacts have been modified by commit "+obj.toString());
          }
                 
@@ -879,17 +892,22 @@ public class JCommit extends javax.swing.JFrame {
     }//GEN-LAST:event_jTable1KeyPressed
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        // TODO add your handling code here:        
-        ToCSV.createCsvFile(CaminhoPadrao+"similaridade.txt", FiltrosCommit.similaridadeclasses(ListadeCommits, jTextField2.getText(), ListadeCommitsShadow));
-        MostrarDados.AbrirArquivoTxt(CaminhoPadrao+"similaridade.txt");
+        
+        
+        JFShowArtefatoFrequencia.main("Quantity of artefacts changes", FiltrosCommit.similaridadeclasses(ListadeCommits), 'S');
+        
+        ArrayList<ArtefatoFrequencia> listateste = new ArrayList<ArtefatoFrequencia>();
+        listateste = FiltrosCommit.similaridadeclasses(ListadeCommits);
+        
+        //ToCSV.createCsvFile(CaminhoPadrao+"similaridade.txt", FiltrosCommit.similaridadeclasses(ListadeCommits, jTextField2.getText(), ListadeCommitsShadow));
+        //MostrarDados.AbrirArquivoTxt(CaminhoPadrao+"similaridade.txt");
 
     }//GEN-LAST:event_jButton12ActionPerformed
 
     private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
-        // TODO add your handling code here:
+        // TODO add your handling code here:        
                 
-        ToCSV.createCsvFile(CaminhoPadrao+"similaridade.txt", FiltrosCommit.EvolucaoClasses(ListadeCommits));
-        MostrarDados.AbrirArquivoTxt(CaminhoPadrao+"similaridade.txt");
+        JFShowArtefatoFrequencia.main("Quantity of artefacts changes", FiltrosCommit.EvolucaoClasses(ListadeCommits), 'M');
         
     }//GEN-LAST:event_jButton13ActionPerformed
 

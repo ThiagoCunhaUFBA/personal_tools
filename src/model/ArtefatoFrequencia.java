@@ -6,6 +6,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 
 /**
@@ -17,17 +18,10 @@ public class ArtefatoFrequencia implements Comparable<ArtefatoFrequencia>{
     private int quantidade;
     
     
-    
     @Override
     public int compareTo(ArtefatoFrequencia artefatofrequencia) {
         
-        if  (Integer.parseInt(this.atributo) > Integer.parseInt(artefatofrequencia.atributo)){
-            return 1;
-        }
-        else if  (Integer.parseInt(this.atributo) < Integer.parseInt(artefatofrequencia.atributo)){
-            return -1;
-        }     
-        return 0;
+        return this.atributo.compareTo(artefatofrequencia.atributo);
     }
 
     public String getAtributo() {
@@ -72,13 +66,9 @@ public class ArtefatoFrequencia implements Comparable<ArtefatoFrequencia>{
             return true;
         return false; //To change body of generated methods, choose Tools | Templates.
     }
-    
+        
+}          
 
     
 
-    
-    
-
-    
-}
 
